@@ -1,2 +1,2 @@
 # shiftmanagementapp
-Shift management application
+Shift management application using python streamlit
