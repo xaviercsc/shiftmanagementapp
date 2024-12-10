@@ -3,3 +3,21 @@ docker build -t shifttracker-app .
 
 # Run the Docker container
 docker run -p 8501:8501 shifttracker-app
+
+
+sudo apt update
+sudo apt install unzip
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws --version
+aws configure
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 806388047932.dkr.ecr.us-east-1.amazonaws.com
+
+
+
+   # Tag the image
+  docker tag shifttracker-app:latest 806388047932.dkr.ecr.us-east-1.amazonaws.com/shifttrackerapp:latest
+
+   # Push the image to ECR
+   docker push 806388047932.dkr.ecr.us-east-1.amazonaws.com/shifttrackerapp:latest
