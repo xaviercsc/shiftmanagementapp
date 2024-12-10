@@ -1,23 +1,16 @@
 {
-    "Wesley": {
+    "Testemp2": {
         "2024-12-02": "Noon Shift",
         "2024-12-03": "Noon Shift",
         "2024-12-04": "Noon Shift",
         "2024-12-05": "Noon Shift",
         "2024-12-06": "Noon Shift"
     },
-    "Manisha": {
-        "2024-12-23": "First Half - Noon",
-        "2024-12-24": "First Half - Noon",
-        "2024-12-25": "First Half - Noon",
-        "2024-12-26": "First Half - Noon",
-        "2024-12-27": "First Half - Noon"
-    },
-    "Das Acharya": {
-        "2024-12-02": "Sick Leave",
-        "2024-12-03": "Sick Leave",
-        "2024-12-04": "Sick Leave",
-        "2024-12-05": "Sick Leave",
-        "2024-12-06": "Sick Leave"
+    "lokesh": {
+        "2024-12-02": "Night Shift",
+        "2024-12-03": "Night Shift",
+        "2024-12-04": "Night Shift",
+        "2024-12-05": "Night Shift",
+        "2024-12-06": "Night Shift"
     }
 }
