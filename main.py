@@ -107,7 +107,7 @@ else:
 
 # Function to calculate and display team capacity and utilization
 def display_team_capacity_utilization():
-    st.header("Team Capacity and Utilization")
+    st.header("Team Utilization")
 
     if not employeelist or not shiftdata:
         st.write("No employee or shift data available for the selected month.")
@@ -164,9 +164,7 @@ def display_team_capacity_utilization():
 
         st.altair_chart(chart)
 
-# Use an expander to create a collapsible widget for team capacity and utilization
-with st.expander("Team Capacity and Utilization"):
-    display_team_capacity_utilization()
+
 
 # Update Shifts as a Widget
 def update_shifts():
@@ -203,13 +201,13 @@ def update_shifts():
         st.success("Shift data updated successfully!")
 
 # Use an expander to create a collapsible widget for updating shifts
-with st.expander("Update Shifts"):
+with st.expander("Shift Updates"):
     update_shifts()
 
 # Employee Management as a Widget
 def employee_management():
     global employeelist, shiftdata  # Declare employeelist and shiftdata as global to modify them within the function
-    st.header("Employee Management")
+    st.header("Add Employee")
 
     emp_name = st.text_input("Employee Name")
     work_location = st.selectbox("Work Location", ["Trivandrum", "Pune"])
@@ -259,13 +257,13 @@ def employee_management():
                 st.error("Employee not found!")
 
 # Use an expander to create a collapsible widget for employee management
-with st.expander("Employee Management"):
+with st.expander("Employee Updates"):
     employee_management()
 
 # Holiday Management as a Widget
 def holiday_management():
     global holidaylist  # Declare holidaylist as global to modify it within the function
-    st.header("Holiday Management")
+    st.header("Holiday List")
 
     holiday_name = st.text_input("Holiday Name")
     holiday_date = st.date_input("Holiday Date")
@@ -304,5 +302,9 @@ def holiday_management():
     st.dataframe(holidays_for_year)
 
 # Use an expander to create a collapsible widget for holiday management
-with st.expander("Holiday Management"):
+with st.expander("Holiday List"):
     holiday_management()
+
+# Use an expander to create a collapsible widget for team capacity and utilization
+with st.expander("Team Capacity"):
+    display_team_capacity_utilization()    
