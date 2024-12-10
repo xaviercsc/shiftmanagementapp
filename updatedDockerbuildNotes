@@ -1,0 +1,39 @@
+Build an App and Push to docker hub:
+
+mkdir newapp
+cd newapp
+git clone https://github.com/xaviercsc/shiftmanagementapp.git
+cd shiftmanagementapp
+docker build -t meandatainc/streamlit-app:latest .
+docker images
+
+--Go to Dockerhub , create an account and then a repository : meandatainc/streamlit-app --
+
+Then to push the built docker image
+docker login
+docker push meandatainc/streamlit-app:latest
+
+
+
+To get or pull an image and run Docker using it :
+docker pull meandatainc/streamlit-app:latest
+
+
+-- Docker Run Steps---
+
+docker run -d -p 8501:8501 --name streamlit-app meandatainc/streamlit-app:latest
+
+--Docker container Stop Steps --
+docker images
+REPOSITORY                  TAG       IMAGE ID       CREATED         SIZE
+meandatainc/streamlit-app   latest    4d0a3f206f6c   7 minutes ago   1.38GB
+meandatainc/streamlit-app   <none>    64082107dad7   8 days ago      510MB
+
+docker ps -a
+CONTAINER ID   IMAGE                              COMMAND                  CREATED         STATUS         PORTS                                       NAMES
+b92d7046fe1d   meandatainc/streamlit-app:latest   "streamlit run main.…"   3 minutes ago   Up 3 minutes   0.0.0.0:8501->8501/tcp, :::8501->8501/tcp   streamlit-app
+
+docker stop b92d7046fe1d
+
+docker rm b92d7046fe1d
+
