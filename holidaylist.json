@@ -4,11 +4,5 @@
         "date": "2024-12-25",
         "type": "Fixed Holiday",
         "location": "All Locations"
-    },
-    {
-        "name": "Boxing Day",
-        "date": "2024-12-26",
-        "type": "Fixed Holiday",
-        "location": "All Locations"
     }
 ]
