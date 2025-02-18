@@ -4,6 +4,9 @@ import pandas as pd
 from datetime import datetime, timedelta
 import altair as alt
 
+# Set the page configuration to use a wide layout
+st.set_page_config(layout="wide")
+
 # Load or initialize data
 def load_data(file_name, default_data):
     try:
@@ -93,6 +96,11 @@ def display_shift_schedule():
 
         # Display DataFrame with styling
         st.dataframe(styled_shift_pivot)
+
+        # Add download button for shift schedule
+        csv = shift_df.to_csv(index=False)
+        st.download_button(label="Download Shift Schedule", data=csv, file_name='shift_schedule.csv', mime='text/csv')
+
     else:
         # Display a blank DataFrame with appropriate columns
         blank_columns = [f"{date.strftime('%Y-%m-%d')} ({date.strftime('%a').upper()})" for date in pd.date_range(start_date, end_date)]
@@ -164,7 +172,9 @@ def display_team_capacity_utilization():
 
         st.altair_chart(chart)
 
-
+        # Add download button for utilization report
+        csv = capacity_df.to_csv(index=False)
+        st.download_button(label="Download Utilization Report", data=csv, file_name='utilization_report.csv', mime='text/csv')
 
 # Update Shifts as a Widget
 def update_shifts():
@@ -231,9 +241,12 @@ def employee_management():
             save_data('employeelist.json', employeelist)
             save_data('shiftdata.json', shiftdata)
         else:
-            # Add new employee
-            emp_id = str(len(employeelist) + 1)
-            employeelist[emp_id] = {'name': emp_name, 'location': work_location}
+            # Generate a new unique employee ID
+            if employeelist:
+                new_emp_id = str(max(int(emp_id) for emp_id in employeelist.keys()) + 1)
+            else:
+                new_emp_id = "1"
+            employeelist[new_emp_id] = {'name': emp_name, 'location': work_location}
             save_data('employeelist.json', employeelist)
             st.success("Employee added successfully!")
 
@@ -299,7 +312,13 @@ def holiday_management():
 
     # Display Holidays for Selected Year
     st.write(f"Holidays for {year}:")
-    st.dataframe(holidays_for_year)
+    holiday_df = pd.DataFrame(holidays_for_year)
+    st.dataframe(holiday_df)
+
+    # Add download button for holiday report
+    if not holiday_df.empty:
+        csv = holiday_df.to_csv(index=False)
+        st.download_button(label="Download Holiday Report", data=csv, file_name='holiday_report.csv', mime='text/csv')
 
 # Use an expander to create a collapsible widget for holiday management
 with st.expander("Holiday List"):
@@ -307,4 +326,4 @@ with st.expander("Holiday List"):
 
 # Use an expander to create a collapsible widget for team capacity and utilization
 with st.expander("Team Capacity"):
-    display_team_capacity_utilization()    
+    display_team_capacity_utilization()
