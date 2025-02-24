@@ -21,3 +21,6 @@ aws ecr get-login-password --region us-east-1 | docker login --username AWS --pa
 
    # Push the image to ECR
    docker push 806388047932.dkr.ecr.us-east-1.amazonaws.com/shifttrackerapp:latest
+
+Create ECS cluster > Create Task definition > create service - deployment configuration
+Cluster> tasks> Network bindings > HTTP://ipaddress:portno
