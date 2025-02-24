@@ -4,7 +4,6 @@ docker build -t shifttracker-app .
 # Run the Docker container
 docker run -p 8501:8501 shifttracker-app
 
-
 sudo apt update
 sudo apt install unzip
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -21,6 +20,13 @@ aws ecr get-login-password --region us-east-1 | docker login --username AWS --pa
 
    # Push the image to ECR
    docker push 806388047932.dkr.ecr.us-east-1.amazonaws.com/shifttrackerapp:latest
+-----------------------------------------
+or Pull from Dockerhub:
+docker login
+docker pull meandatainc/streamlit-app:latest
+docker tag meandatainc/streamlit-app:latest 135482652268.dkr.ecr.us-east-1.amazonaws.com/shiftapprepo:latest
+docker push 135482652268.dkr.ecr.us-east-1.amazonaws.com/shiftapprepo:latest
+------------------------------------
 
 Create ECS cluster > Create Task definition > create service - deployment configuration
 Cluster> tasks> Network bindings > HTTP://ipaddress:portno
