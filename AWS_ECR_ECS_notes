@@ -30,3 +30,269 @@ docker push 135482652268.dkr.ecr.us-east-1.amazonaws.com/shiftapprepo:latest
 
 Create ECS cluster > Create Task definition > create service - deployment configuration
 Cluster> tasks> Network bindings > HTTP://ipaddress:portno
+
+============================================
+
+Additional notes with terrafor am dS3 bucket implementation :
+===================================================================
+teraform example :
+sudo apt update
+sudo apt install -y software-properties-common
+
+Add Terraform's Official Repository:
+wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+
+Install Terraform:
+sudo apt update
+sudo apt install terraform
+terraform version
+
+
+mkdir my-terraform-project
+cd my-terraform-project
+
+export AWS_ACCESS_KEY_ID=your-access-key-id
+export AWS_SECRET_ACCESS_KEY=your-secret-access-key
+
+
+Create a main.tf file with your infrastructure configuration:
+==========================================================
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_s3_bucket" "my_bucket" {
+  bucket = "xaviertestbucket"
+}
+
+resource "aws_ecr_repository" "my_repository" {
+  name = "xaviertestrepo"
+}
+
+resource "aws_ecs_cluster" "my_cluster" {
+  name = "xaviertestcluster"
+}
+
+resource "aws_ecs_task_definition" "my_task" {
+  family = "xaviertasks"
+  container_definitions = jsonencode([{
+    name  = "my-container"
+    image = "${aws_ecr_repository.my_repository.repository_url}:latest"
+    memory = 512
+    cpu = 256
+    essential = true
+    portMappings = [{
+      containerPort = 8501
+      hostPort = 8501
+    }]
+  }])
+}
+
+resource "aws_ecs_service" "my_service" {
+  name = "xavierecsservice"
+  cluster = aws_ecs_cluster.my_cluster.id
+  task_definition = aws_ecs_task_definition.my_task.arn
+  desired_count = 1
+  launch_type = "EC2"
+}
+
+======================
+
+
+Initialize Terraform
+terraform init
+
+Apply Terraform Configuration
+terraform apply
+
+cleanup resources:
+terraform destroy
+
+
+
+Environment Variables: Use environment variables to pass AWS credentials securely:
+
+export AWS_ACCESS_KEY_ID=your-access-key-id
+export AWS_SECRET_ACCESS_KEY=your-secret-access-key
+
+
+=================================================================
+
+S3 ECR ECS notes :
+mkdir newapp
+cd newapp
+git clone https://github.com/xaviercsc/shiftmanagementapp.git
+cd 'shiftmanagementapp'
+docker build -t meandatainc/streamlit-ecsapp:latest .
+docker images
+
+--Go to Dockerhub , create an account and then a repository : meandatainc/streamlit-ecsapp --
+
+Then to push the built docker image
+docker login
+or
+docker login -u meandatainc
+docker push meandatainc/streamlit-ecsapp:latest
+
+To get or pull an image and run Docker using it :
+docker pull meandatainc/streamlit-ecsapp:latest
+
+python -m venv myenv
+source myenv/bin/activate
+pip install -r  requirements.txt
+deactivate
+
+export AWS_ACCESS_KEY_ID=xxxxx
+export AWS_SECRET_ACCESS_KEY=Cxxxxx
+-- Docker Run Steps---
+
+docker run -d -p 8501:8501 --name streamlit-ecsapp meandatainc/streamlit-ecsapp:latest
+docker run -p 8501:8501 -e AWS_ACCESS_KEY_ID=xxxxx -e AWS_SECRET_ACCESS_KEY=xxxxxxxxxx meandatainc/streamlit-ecsapp:latest
+
+
+sudo apt update
+sudo apt install unzip
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws --version
+aws configure
+
+Username: xxxxxxx
+Password: xxxx
+AWS Access Key: xxxxx
+AWS Secret Key: xxxx
+Account ID: 684077504522
+
+ create s3 bucket ; shiftappbucket , currently made as public but not a right approach .
+upload these files 
+employeelist.json
+holidaylist.json
+shiftdata.json
+
+create ECR registry : shiftapprepo
+
+
+
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 684077504522.dkr.ecr.us-east-1.amazonaws.com
+
+
+docker tag meandatainc/streamlit-ecsapp:latest 684077504522.dkr.ecr.us-east-1.amazonaws.com/shiftapprepo:latest
+ 
+
+docker push 684077504522.dkr.ecr.us-east-1.amazonaws.com/shiftapprepo:latest
+
+
+Create ECS cluster > Create Task definition > create service - deployment configuration
+make sure environment variables are set 
+AWS_ACCESS_KEY_ID=xxxxxxxx
+AWS_SECRET_ACCESS_KEY=xxxxxxxxxx
+
+Cluster> tasks> Network bindings > HTTP://ipaddress:portno find external address to access the application
+
+
+Security Groups > custom TCP port 8501 : 0.0.0.0/0 open all traffic under ECS tasks to port 8501 
+
+
+===================================================================================
+
+Step-by-Step Guide
+1. Set Up Your AWS Environment
+Create an S3 Bucket:
+
+Log in to the AWS Management Console and navigate to the S3 service.
+Create a new bucket where you will store your JSON files.
+Set Bucket Permissions:
+
+Ensure the bucket has appropriate permissions to allow your ECS tasks to read and write. You might need to configure bucket policies or IAM roles.
+2. Configure IAM Roles and Policies
+Create an IAM Role for ECS Tasks:
+
+Go to the IAM service in AWS.
+Create a new role with the AmazonECSTaskExecutionRolePolicy attached.
+Attach additional policies to allow both read and write access to S3. You can create a custom policy like:
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": "arn:aws:s3:::your-bucket-name/*"
+    }
+  ]
+}
+
+Attach the IAM Role to Your ECS Task:
+
+When defining your ECS task, specify the IAM role you created.
+3. Modify Your Application Code
+Install AWS SDK for Python (Boto3):
+
+Ensure your Docker image has boto3 installed. Add this to your requirements.txt:
+boto3
+
+Update Your Application to Read/Write from/to S3:
+
+Use Boto3 to interact with S3. Here’s an example of how to read and write JSON files:
+import boto3
+import json
+import streamlit as st
+import pandas as pd
+from datetime import datetime, timedelta
+import altair as alt
+
+# Set the page configuration to use a wide layout
+st.set_page_config(layout="wide")
+
+# AWS S3 Configuration
+BUCKET_NAME = 'your-bucket-name'
+s3 = boto3.client('s3')
+
+def load_data_from_s3(file_name, default_data):
+    try:
+        obj = s3.get_object(Bucket=BUCKET_NAME, Key=file_name)
+        return json.loads(obj['Body'].read().decode('utf-8'))
+    except s3.exceptions.NoSuchKey:
+        return default_data
+
+def save_data_to_s3(file_name, data):
+    s3.put_object(Bucket=BUCKET_NAME, Key=file_name, Body=json.dumps(data))
+
+# Load existing data or start with empty data
+employeelist = load_data_from_s3('employeelist.json', {})
+shiftdata = load_data_from_s3('shiftdata.json', {})
+holidaylist = load_data_from_s3('holidaylist.json', {})
+
+# Example of saving data back to S3
+save_data_to_s3('employeelist.json', employeelist)
+save_data_to_s3('shiftdata.json', shiftdata)
+save_data_to_s3('holidaylist.json', holidaylist)
+
+# Rest of your application logic...
+
+Deploy Your Application to ECS:
+
+Use Amazon ECS to deploy your Docker container. Ensure the task definition includes the IAM role that allows S3 access.
+4. Deploy with AWS ECS
+Create an ECS Cluster:
+
+Use the AWS Management Console or AWS CLI to create an ECS cluster.
+Define an ECS Task:
+
+Specify your Docker image and include the IAM role for S3 access.
+Run the ECS Service:
+
+Deploy your task definition as a service in the ECS cluster.
+Additional Considerations
+Network Configuration: Ensure your ECS tasks are in a subnet that allows internet access, or configure a VPC endpoint for S3.
+
+Security: Carefully manage IAM roles and policies to ensure your application has only the necessary permissions.
+
+Cost Management: Monitor S3 and ECS usage to manage costs effectively.
+
+By following these steps, you can successfully read from and write to Amazon S3 from your Docker application in Amazon ECS. This setup allows for flexible data management and scalability.
