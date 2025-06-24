@@ -176,6 +176,46 @@ def display_team_capacity_utilization():
         csv = capacity_df.to_csv(index=False)
         st.download_button(label="Download Utilization Report", data=csv, file_name='utilization_report.csv', mime='text/csv')
 
+# Function to display employee-wise leave and shift summary
+def display_employee_summary():
+    st.header("Leave and Shift Summary")
+
+    summary_data = []
+    shift_types = [
+        "Morning Shift", "Noon Shift", "Night Shift", "Planned Leave",
+        "First Half - Morning", "First Half - Noon", "First Half - Night", "Second Half - Morning",
+        "Second Half - Noon", "Second Half - Night",
+        "Sick Leave",
+        "Optional Holiday", "Fixed Holiday", "None"
+    ]
+
+    for emp_id, emp in employeelist.items():
+        emp_name = emp['name']
+        shifts = shiftdata.get(emp_name, {})
+        shift_counts = {shift_type: 0 for shift_type in shift_types}
+
+        # Calculate shift counts
+        for date_str, shift in shifts.items():
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+            if start_date <= date_obj <= end_date:
+                if shift in shift_types:
+                    shift_counts[shift] += 1
+
+        summary_data.append({'Employee': emp_name, **shift_counts})
+
+    # Convert to DataFrame and display
+    summary_df = pd.DataFrame(summary_data)
+
+    if summary_df.empty:
+        st.write("No summary data available for the selected month.")
+    else:
+        st.dataframe(summary_df)
+
+        # Add download button for summary report
+        csv = summary_df.to_csv(index=False)
+        st.download_button(label="Download Summary Report", data=csv, file_name='summary_report.csv', mime='text/csv')
+
+
 # Update Shifts as a Widget
 def update_shifts():
     global shiftdata  # Declare shiftdata as global to modify it within the function
@@ -327,3 +367,7 @@ with st.expander("Holiday List"):
 # Use an expander to create a collapsible widget for team capacity and utilization
 with st.expander("Team Capacity"):
     display_team_capacity_utilization()
+
+# Use an expander to create a collapsible widget for employee summary
+with st.expander("Employee Shift Summary"):
+    display_employee_summary()    
