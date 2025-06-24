@@ -3,26 +3,29 @@ import json
 import pandas as pd
 from datetime import datetime, timedelta
 import altair as alt
+import boto3
 
 # Set the page configuration to use a wide layout
 st.set_page_config(layout="wide")
 
-# Load or initialize data
-def load_data(file_name, default_data):
+# AWS S3 Configuration
+BUCKET_NAME = 'shiftappbucket'  # Replace with your actual bucket name
+s3 = boto3.client('s3')
+
+def load_data_from_s3(file_name, default_data):
     try:
-        with open(file_name, 'r') as file:
-            return json.load(file)
-    except FileNotFoundError:
+        obj = s3.get_object(Bucket=BUCKET_NAME, Key=file_name)
+        return json.loads(obj['Body'].read().decode('utf-8'))
+    except s3.exceptions.NoSuchKey:
         return default_data
 
-def save_data(file_name, data):
-    with open(file_name, 'w') as file:
-        json.dump(data, file, indent=4)
+def save_data_to_s3(file_name, data):
+    s3.put_object(Bucket=BUCKET_NAME, Key=file_name, Body=json.dumps(data))
 
 # Load existing data or start with empty data
-employeelist = load_data('employeelist.json', {})
-shiftdata = load_data('shiftdata.json', {})
-holidaylist = load_data('holidaylist.json', [])
+employeelist = load_data_from_s3('employeelist.json', {})
+shiftdata = load_data_from_s3('shiftdata.json', {})
+holidaylist = load_data_from_s3('holidaylist.json', {})
 
 # Shift Management - Move to the top
 st.header("Shift Tracker")
@@ -247,7 +250,7 @@ def update_shifts():
                 if selected_emp not in shiftdata:
                     shiftdata[selected_emp] = {}
                 shiftdata[selected_emp][date_str] = shift_type
-        save_data('shiftdata.json', shiftdata)
+        save_data_to_s3('shiftdata.json', shiftdata)
         st.success("Shift data updated successfully!")
 
 # Use an expander to create a collapsible widget for updating shifts
@@ -278,8 +281,8 @@ def employee_management():
                 st.success("Employee location updated successfully!")
             if emp_name.lower() in shiftdata:
                 shiftdata[emp_name] = shiftdata.pop(emp_name.lower())
-            save_data('employeelist.json', employeelist)
-            save_data('shiftdata.json', shiftdata)
+            save_data_to_s3('employeelist.json', employeelist)
+            save_data_to_s3('shiftdata.json', shiftdata)
         else:
             # Generate a new unique employee ID
             if employeelist:
@@ -287,7 +290,7 @@ def employee_management():
             else:
                 new_emp_id = "1"
             employeelist[new_emp_id] = {'name': emp_name, 'location': work_location}
-            save_data('employeelist.json', employeelist)
+            save_data_to_s3('employeelist.json', employeelist)
             st.success("Employee added successfully!")
 
     # Option to remove an employee
@@ -303,8 +306,8 @@ def employee_management():
                 del employeelist[emp_id_to_remove]
                 if emp_to_remove in shiftdata:
                     del shiftdata[emp_to_remove]
-                save_data('employeelist.json', employeelist)
-                save_data('shiftdata.json', shiftdata)
+                save_data_to_s3('employeelist.json', employeelist)
+                save_data_to_s3('shiftdata.json', shiftdata)
                 st.success("Employee and their shift data removed successfully!")
             else:
                 st.error("Employee not found!")
@@ -331,7 +334,7 @@ def holiday_management():
             'location': holiday_location
         }
         holidaylist.append(holiday_entry)
-        save_data('holidaylist.json', holidaylist)
+        save_data_to_s3('holidaylist.json', holidaylist)
         st.success("Holiday data updated successfully!")
 
     # Filter holidays for the selected year
@@ -345,7 +348,7 @@ def holiday_management():
         holiday_to_remove = st.selectbox("Select Holiday to Remove", [f"{h['name']} on {h['date']}" for h in holidays_for_year])
         if st.button("Remove Selected Holiday"):
             holidaylist = [h for h in holidaylist if f"{h['name']} on {h['date']}" != holiday_to_remove]
-            save_data('holidaylist.json', holidaylist)
+            save_data_to_s3('holidaylist.json', holidaylist)
             st.success("Holiday removed successfully!")
     else:
         st.write("No holidays to remove for the selected year.")
@@ -370,4 +373,4 @@ with st.expander("Team Capacity"):
 
 # Use an expander to create a collapsible widget for employee summary
 with st.expander("Employee Shift Summary"):
-    display_employee_summary()    
+    display_employee_summary()
