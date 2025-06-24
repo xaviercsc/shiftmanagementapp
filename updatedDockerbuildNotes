@@ -11,6 +11,8 @@ docker images
 
 Then to push the built docker image
 docker login
+or
+docker login -u meandatainc
 docker push meandatainc/streamlit-app:latest
 
 
